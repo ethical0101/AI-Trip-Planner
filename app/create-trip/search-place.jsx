@@ -57,7 +57,6 @@ export default function SearchPlace() {
         }}
         query={{
           key: process.env.EXPO_PUBLIC_GOOGLE_MAP_KEY,
-          // AIzaSyBJMJ90Rd4JWbUoMR2TRQ4WDtMrK4MtH0A
           language: "en",
         }}
         styles={{
