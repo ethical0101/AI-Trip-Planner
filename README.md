@@ -49,30 +49,17 @@ GOOGLE_MAPS_API_KEY=your_google_maps_api_key
 4. Customize your trip based on AI suggestions.
 
 ## Screenshots
-![Screenshot_20250219_164019](https://github.com/user-attachments/assets/5821b907-80cb-40b4-b062-1201a1e0f05d)
 
-![Screenshot_20250219_164030](https://github.com/user-attachments/assets/968a4f67-928d-431e-bf83-1656f3f139fd)
-
-![Screenshot_20250219_164040](https://github.com/user-attachments/assets/ad8823a6-fd24-47b3-b434-36077f89a04b)
-
-![Screenshot_20250219_164159](https://github.com/user-attachments/assets/75f38498-f7dd-4c80-ba7d-75feb24e9a4b)
-
-![Screenshot_20250219_163923](https://github.com/user-attachments/assets/c528780f-c7e5-4145-9ebc-7fca4b8a9d69)
-
-
-![Screenshot_20250219_164249](https://github.com/user-attachments/assets/60839ec4-3b15-4aa3-8b64-15aaa87c2768)
-
-![Screenshot_20250219_164301](https://github.com/user-attachments/assets/44c97ba2-07b2-4b33-ab09-cd7c349fcbc8)
-
-![Screenshot_20250219_164309](https://github.com/user-attachments/assets/6c8e30ba-e9e8-49df-ab97-5442a44d150b)
-
-![Screenshot_20250219_164323](https://github.com/user-attachments/assets/bb1008b9-afd2-498d-b79e-60ec257c84a5)
-
-![Screenshot_20250219_164333](https://github.com/user-attachments/assets/1779c8a4-fa4b-4b6a-b04c-b7b1ed037f8e)
-
-![Screenshot_2025_0219_163850](https://github.com/user-attachments/assets/8c17a8b2-2541-46c5-9479-642a643a31da)
-
-
+![Screenshot_20250219_164019](https://github.com/user-attachments/assets/e41495e3-116b-43b0-8022-28cf19fbf3ce)
+![Screenshot_20250219_164030](https://github.com/user-attachments/assets/38de695a-2446-4d54-9499-0cf181b3fa1e)
+![Screenshot_20250219_164040](https://github.com/user-attachments/assets/10eea0ff-1362-4204-bd58-f169dc893f57)
+![Screenshot_20250219_164159](https://github.com/user-attachments/assets/a9bddbc3-e0e3-4a66-b859-234a07270bab)
+![Screenshot_20250219_163923](https://github.com/user-attachments/assets/acbba557-4930-4fc3-afce-fe0cbd681615)
+![Screenshot_20250219_164249](https://github.com/user-attachments/assets/7d2cea13-1549-4c21-a8d9-79d457bca83a)
+![Screenshot_20250219_164301](https://github.com/user-attachments/assets/9b9148fc-caae-428d-ab93-66900e8f46e0)
+![Screenshot_20250219_164309](https://github.com/user-attachments/assets/21c40d71-17ca-444d-8bf4-c5ee51a0e5da)
+![Screenshot_20250219_164323](https://github.com/user-attachments/assets/c4a0649b-ec92-4cb0-9a46-17d7d149ce00)
+![Screenshot_2025_0219_163850](https://github.com/user-attachments/assets/98cc775e-2559-4642-8b3c-dd067d5daede)
 
 
 ## Get a fresh project
