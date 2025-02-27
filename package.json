@@ -44,7 +44,7 @@
     "react-dom": "18.3.1",
     "react-native": "0.76.7",
     "react-native-calendar-picker": "^8.0.5",
-    "react-native-gesture-handler": "~2.20.2",
+    "react-native-gesture-handler": "~2.23.0",
     "react-native-get-random-values": "^1.11.0",
     "react-native-google-places-autocomplete": "^2.5.7",
     "react-native-reanimated": "~3.16.1",
