@@ -19,9 +19,8 @@ export default function RootLayout() {
                     headerShown: false,
                 }}
             >
-                {/* <Stack.Screen name='index' options={{
-          headerShown: false
-        }}/> */}
+                {/* Ensure index route (Login) is part of the stack so it can be shown first when unauthenticated */}
+                <Stack.Screen name={"index"} />
                 <Stack.Screen name={"(tabs)"} />
             </Stack>
         </CreateTripContext.Provider>

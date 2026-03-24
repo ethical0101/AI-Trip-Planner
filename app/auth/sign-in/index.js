@@ -9,8 +9,7 @@ import {
     View,
 } from "react-native";
 import AntDesign from "@expo/vector-icons/AntDesign";
-import { signInWithEmailAndPassword } from "firebase/auth";
-import { auth } from "./../../../configs/FirebaseConfig";
+import { initFirebase } from "./../../../configs/FirebaseConfig";
 
 export default function SignIn() {
     const navigation = useNavigation();
@@ -25,31 +24,38 @@ export default function SignIn() {
         });
     }, []);
 
-    const onSignIn = () => {
-        if (!email && !password) {
+    const onSignIn = async () => {
+        if (!email || !password) {
             ToastAndroid.show(
                 "Please Enter Email and Password",
                 ToastAndroid.LONG
             );
             return;
         }
-
-        signInWithEmailAndPassword(auth, email, password)
-            .then((userCredential) => {
-                // Signed in
-                const user = userCredential.user;
-                router.replace("/mytrip");
-                // console.log(user);//1
-                // ...
-            })
-            .catch((error) => {
-                const errorCode = error.code;
-                const errorMessage = error.message;
-                // console.log(errorMessage, error.Code);//1
-                if (errorCode == "auth/invalid-credential") {
-                    ToastAndroid.show("Invalid credentials", ToastAndroid.LONG);
-                }
-            });
+        try {
+            const { auth } = await initFirebase();
+            if (!auth) {
+                ToastAndroid.show("Firebase not configured properly", ToastAndroid.LONG);
+                return;
+            }
+            const result = await auth.signInWithEmailAndPassword(email, password);
+            console.log('Sign in successful:', result.user.email);
+            router.replace("/(tabs)/mytrip");
+        } catch (error) {
+            console.error('Sign in error:', error);
+            const errorCode = error.code;
+            if (errorCode === "auth/invalid-credential" || errorCode === "auth/wrong-password") {
+                ToastAndroid.show("Incorrect email or password. Please try again.", ToastAndroid.LONG);
+            } else if (errorCode === "auth/user-not-found") {
+                ToastAndroid.show("No account found with this email", ToastAndroid.LONG);
+            } else if (errorCode === "auth/invalid-email") {
+                ToastAndroid.show("Invalid email format", ToastAndroid.LONG);
+            } else if (errorCode === "auth/too-many-requests") {
+                ToastAndroid.show("Too many failed attempts. Try again later.", ToastAndroid.LONG);
+            } else {
+                ToastAndroid.show("Sign-in failed. Please check your credentials.", ToastAndroid.LONG);
+            }
+        }
     };
 
     return (
@@ -62,7 +68,7 @@ export default function SignIn() {
             }}
         >
             <TouchableOpacity onPress={() => router.back()}>
-                <AntDesign name="arrowleft" size={24} color="black" />
+                <AntDesign name="left" size={24} color="black" />
             </TouchableOpacity>
             <Text
                 style={{

@@ -1,8 +1,9 @@
 import { View, Text, Image, TouchableOpacity } from "react-native";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import moment from "moment";
 import UserTripCard from "./UserTripCard";
 import { useRouter } from "expo-router";
+import { getRelevantImage, getDeterministicPlaceholder } from "../../services/ImageService";
 
 export default function UserTripList({ userTrips }) {
     const router = useRouter();
@@ -16,32 +17,60 @@ export default function UserTripList({ userTrips }) {
     // Separate the latest trip from the rest of the trips
     const latestTrip = sortedTrips[sortedTrips.length - 1];
     const [selectedTrip, setSelectedTrip] = useState(latestTrip);
-    const selectedTripData = selectedTrip
-        ? JSON.parse(selectedTrip.tripData)
-        : null;
+    const selectedTripData = (() => {
+        try {
+            return selectedTrip ? JSON.parse(selectedTrip.tripData) : null;
+        } catch (e) {
+            return null;
+        }
+    })();
+
+    const [headerUrl, setHeaderUrl] = useState(
+        getDeterministicPlaceholder(selectedTrip?.tripPlan?.location || "trip")
+    );
+    const [headerError, setHeaderError] = useState(false);
+
+    useEffect(() => {
+        const fetchHeader = async () => {
+            const locationName =
+                selectedTripData?.locationInfo?.name ||
+                selectedTrip?.tripPlan?.location ||
+                "";
+            if (locationName) {
+                const url = await getRelevantImage({
+                    name: locationName,
+                    location: locationName,
+                    type: "destination",
+                });
+                setHeaderUrl(url);
+                setHeaderError(false);
+            }
+        };
+
+        fetchHeader();
+    }, [selectedTrip?.tripPlan?.location, selectedTripData?.locationInfo?.name]);
 
     return (
         <View>
             <View style={{ marginTop: 20 }}>
-                {selectedTripData?.locationInfo?.photoRef ? (
+                {!headerError ? (
                     <Image
-                        source={{
-                            uri:
-                                "https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photo_reference=" +
-                                selectedTripData.locationInfo?.photoRef +
-                                "&key=" +
-                                process.env.EXPO_PUBLIC_GOOGLE_MAP_KEY,
-                        }}
+                        source={{ uri: headerUrl }}
                         style={{
                             width: "100%",
                             height: 240,
                             objectFit: "cover",
                             borderRadius: 15,
                         }}
+                        onError={() => setHeaderError(true)}
                     />
                 ) : (
                     <Image
-                        source={require("./../../assets/images/placeholder.jpeg")}
+                        source={{
+                            uri: getDeterministicPlaceholder(
+                                selectedTrip?.tripPlan?.location || "trip"
+                            ),
+                        }}
                         style={{
                             width: "100%",
                             height: 240,

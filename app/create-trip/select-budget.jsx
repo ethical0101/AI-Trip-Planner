@@ -18,7 +18,7 @@ export default function SelectBudget() {
     useEffect(() => {
         navigation.setOptions({
             headerShown: true,
-            headerTransparent: true,
+            headerTransparent: false, // Make header solid
             headerTitle: "",
         });
     }, []);
@@ -42,7 +42,7 @@ export default function SelectBudget() {
         <View
             style={{
                 padding: 25,
-                paddingTop: 55,
+                paddingTop: 50, // Increase padding to avoid header overlay
                 backgroundColor: "#fff",
                 height: "100%",
             }}

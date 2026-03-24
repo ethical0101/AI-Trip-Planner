@@ -12,7 +12,7 @@ export default function ReviewTrip() {
     useEffect(() => {
         navigation.setOptions({
             headerShown: true,
-            headerTransparent: true,
+            headerTransparent: false, // Make header solid
             headerTitle: "",
         });
     }, []);
@@ -21,7 +21,7 @@ export default function ReviewTrip() {
         <View
             style={{
                 padding: 25,
-                paddingTop: 45,
+                paddingTop: 80, // Increase padding to avoid header overlay
                 backgroundColor: "#fff",
                 height: "100%",
             }}

@@ -1,11 +1,40 @@
 import { View, Text, Image } from "react-native";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import moment from "moment";
+import { getRelevantImage, getDeterministicPlaceholder } from "../../services/ImageService";
 
 export default function UserTripCard({ trip }) {
+    const [thumbUrl, setThumbUrl] = useState(getDeterministicPlaceholder("trip"));
+    const [thumbError, setThumbError] = useState(false);
+
     const formatData = (data) => {
-        return JSON.parse(data);
+        try {
+            return JSON.parse(data);
+        } catch (e) {
+            return {};
+        }
     };
+
+    const tripData = formatData(trip.tripData);
+    const location = trip.tripPlan?.location || "Unknown Destination";
+    const startDate = tripData?.startDate;
+    const travelerTitle = tripData?.traveler?.title || "Unknown";
+
+    useEffect(() => {
+        const fetchThumb = async () => {
+            const tripLocation = tripData?.locationInfo?.name || location;
+            if (tripLocation) {
+                const url = await getRelevantImage({
+                    name: tripLocation,
+                    location: tripLocation,
+                    type: "destination",
+                });
+                setThumbUrl(url);
+            }
+        };
+        fetchThumb();
+    }, [location, tripData?.locationInfo?.name]);
+
     return (
         <View
             style={{
@@ -17,28 +46,27 @@ export default function UserTripCard({ trip }) {
                 alignItems: "center",
             }}
         >
-            {/* <Image source={require('./../../assets/images/placeholder.jpeg')}
-        style={{
-            width:100,
-            height:100,
-            borderRadius:15
-        }}
-      /> */}
-            <Image
-                source={{
-                    uri:
-                        "https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photo_reference=" +
-                        formatData(trip.tripData).locationInfo?.photoRef +
-                        "&key=" +
-                        process.env.EXPO_PUBLIC_GOOGLE_MAP_KEY,
-                }}
-                style={{
-                    width: 100,
-                    height: 100,
-                    borderRadius: 15,
-                }}
-            />
-            <View>
+            {!thumbError ? (
+                <Image
+                    source={{ uri: thumbUrl }}
+                    style={{
+                        width: 100,
+                        height: 100,
+                        borderRadius: 15,
+                    }}
+                    onError={() => setThumbError(true)}
+                />
+            ) : (
+                <Image
+                    source={{ uri: getDeterministicPlaceholder(location) }}
+                    style={{
+                        width: 100,
+                        height: 100,
+                        borderRadius: 15,
+                    }}
+                />
+            )}
+            <View style={{ flex: 1 }}>
                 <Text
                     style={{
                         fontFamily: "outfit-medium",
@@ -47,8 +75,19 @@ export default function UserTripCard({ trip }) {
                         paddingRight: 20,
                     }}
                 >
-                    {trip.tripPlan?.location}
+                    {location}
                 </Text>
+                {startDate && (
+                    <Text
+                        style={{
+                            fontFamily: "outfit",
+                            fontSize: 14,
+                            color: "#7C7C7C",
+                        }}
+                    >
+                        {moment(startDate).format("DD MMM yyyy")}
+                    </Text>
+                )}
                 <Text
                     style={{
                         fontFamily: "outfit",
@@ -56,18 +95,7 @@ export default function UserTripCard({ trip }) {
                         color: "#7C7C7C",
                     }}
                 >
-                    {moment(formatData(trip.tripData).startDate).format(
-                        "DD MMM yyyy"
-                    )}
-                </Text>
-                <Text
-                    style={{
-                        fontFamily: "outfit",
-                        fontSize: 14,
-                        color: "#7C7C7C",
-                    }}
-                >
-                    Travelling: {formatData(trip.tripData).traveler.title}
+                    Travelling: {travelerTitle}
                 </Text>
             </View>
         </View>

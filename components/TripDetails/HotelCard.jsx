@@ -1,20 +1,25 @@
 import { View, Text, Image } from "react-native";
-import React, { useEffect, useState } from "react";
-import { GetPhotoRef } from "../../services/GooglePlaceApi";
+import React, { useState, useEffect } from "react";
+import { getRelevantImage, getPlaceholderImage } from "../../services/ImageService";
 
-export default function HotelCard({ item }) {
-    const [photoRef, setPhotoRef] = useState(null);
+export default function HotelCard({ item, location }) {
+    const [imageUrl, setImageUrl] = useState(getPlaceholderImage());
+    const [imageError, setImageError] = useState(false);
 
     useEffect(() => {
-        GetGooglePhotoRef();
-    }, []);
-
-    const GetGooglePhotoRef = async () => {
-        const result = await GetPhotoRef(item.hotelName);
-        const photoReference = result?.results[0]?.photos[0]?.photo_reference;
-        // console.log(photoReference);//1
-        setPhotoRef(photoReference);
-    };
+        // Fetch real hotel image based on name
+        const fetchImage = async () => {
+            if (item?.hotelName) {
+                const url = await getRelevantImage({
+                    name: item.hotelName,
+                    location,
+                    type: "hotel",
+                });
+                setImageUrl(url);
+            }
+        };
+        fetchImage();
+    }, [item?.hotelName, location]);
 
     return (
         <View
@@ -23,20 +28,16 @@ export default function HotelCard({ item }) {
                 width: 180,
             }}
         >
-            {photoRef ? (
+            {!imageError ? (
                 <Image
-                    source={{
-                        uri:
-                            "https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photo_reference=" +
-                            photoRef +
-                            "&key=" +
-                            process.env.EXPO_PUBLIC_GOOGLE_MAP_KEY,
-                    }}
+                    source={{ uri: imageUrl }}
                     style={{
                         width: 180,
                         height: 120,
                         borderRadius: 15,
+                        backgroundColor: "#f0f0f0",
                     }}
+                    onError={() => setImageError(true)}
                 />
             ) : (
                 <View
@@ -44,14 +45,12 @@ export default function HotelCard({ item }) {
                         width: 180,
                         height: 120,
                         borderRadius: 15,
-                        backgroundColor: "#e8e8e8",
+                        backgroundColor: "#4A90E2",
                         justifyContent: "center",
                         alignItems: "center",
                     }}
                 >
-                    <Text style={{ fontFamily: "outfit-medium", fontSize: 17 }}>
-                        No Image
-                    </Text>
+                    <Text style={{ fontSize: 40 }}>🏨</Text>
                 </View>
             )}
             <View
@@ -62,10 +61,22 @@ export default function HotelCard({ item }) {
                 <Text
                     style={{
                         fontFamily: "outfit-medium",
-                        fontSize: 17,
+                        fontSize: 15,
                     }}
+                    numberOfLines={2}
                 >
                     {item?.hotelName}
+                </Text>
+
+                <Text
+                    style={{
+                        fontFamily: "outfit",
+                        fontSize: 12,
+                        color: "#999",
+                    }}
+                    numberOfLines={1}
+                >
+                    {item?.address}
                 </Text>
 
                 <View
@@ -73,23 +84,41 @@ export default function HotelCard({ item }) {
                         display: "flex",
                         flexDirection: "row",
                         justifyContent: "space-between",
+                        marginTop: 5,
                     }}
                 >
                     <Text
                         style={{
-                            fontFamily: "outfit",
+                            fontFamily: "outfit-bold",
+                            fontSize: 14,
+                            color: "#FF6B6B",
                         }}
                     >
-                        ⭐ {item?.rating}
+                        ₹ {item?.pricePerNight || item?.price}
                     </Text>
                     <Text
                         style={{
                             fontFamily: "outfit",
+                            fontSize: 12,
                         }}
                     >
-                        💰 {item?.pricePerNight}/night
+                        ⭐ {item?.rating}
                     </Text>
                 </View>
+
+                {item?.description && (
+                    <Text
+                        style={{
+                            fontFamily: "outfit",
+                            fontSize: 11,
+                            color: "#666",
+                            marginTop: 5,
+                        }}
+                        numberOfLines={2}
+                    >
+                        {item.description}
+                    </Text>
+                )}
             </View>
         </View>
     );

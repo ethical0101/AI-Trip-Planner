@@ -14,7 +14,7 @@ export default function selectTraveler() {
     useEffect(() => {
         navigation.setOptions({
             headerShown: true,
-            headerTransparent: true,
+            headerTransparent: false, // Make header solid
             headerTitle: "",
         });
     }, []);
@@ -31,7 +31,7 @@ export default function selectTraveler() {
         <View
             style={{
                 padding: 25,
-                paddingTop: 45,
+                paddingTop: 50, // Increase padding to avoid header overlay
                 backgroundColor: "#fff",
                 height: "100%",
             }}

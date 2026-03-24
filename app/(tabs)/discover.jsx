@@ -1,17 +1,32 @@
-import { View } from "react-native";
-import React, { useContext, useEffect } from "react";
+import { View, Text, FlatList, TouchableOpacity, Image, ActivityIndicator } from "react-native";
+import React, { useContext, useEffect, useMemo, useState } from "react";
 import "react-native-get-random-values";
 import { useNavigation, useRouter } from "expo-router";
-import { GooglePlacesAutocomplete } from "react-native-google-places-autocomplete";
 import { CreateTripContext } from "./../../context/CreateTripContext";
+import { GetPlaceDetails } from "../../services/GooglePlaceApi";
+import { getRelevantImage, getDeterministicPlaceholder } from "../../services/ImageService";
 
-// navigator.geolocation = require('@react-native-community/geolocation');
-// navigator.geolocatiom = require('react-native-geolocation-service');
-
-export default function SearchPlace() {
+export default function Discover() {
     const navigation = useNavigation();
-    const { tripData, setTripData } = useContext(CreateTripContext);
+    const { setTripData } = useContext(CreateTripContext);
     const router = useRouter();
+
+    const [images, setImages] = useState({});
+    const [loading, setLoading] = useState({});
+
+    const recommendedPlaces = useMemo(
+        () => [
+            { name: "Paris, France" },
+            { name: "Bali, Indonesia" },
+            { name: "Dubai, UAE" },
+            { name: "Agra, India" },
+            { name: "Goa, India" },
+            { name: "Kyoto, Japan" },
+            { name: "Rome, Italy" },
+            { name: "London, UK" },
+        ],
+        []
+    );
 
     useEffect(() => {
         navigation.setOptions({
@@ -21,52 +36,104 @@ export default function SearchPlace() {
         });
     }, []);
 
-    //   useEffect(() => {
-    //     console.log(tripData);  //1
-    //   },[tripData])
+    useEffect(() => {
+        const fetchImages = async () => {
+            const newImages = {};
+            const newLoading = {};
+
+            for (const place of recommendedPlaces) {
+                newLoading[place.name] = true;
+                const imageUrl = await getRelevantImage({
+                    name: place.name,
+                    location: place.name,
+                    type: "destination",
+                });
+                newImages[place.name] = imageUrl || getDeterministicPlaceholder(place.name);
+                newLoading[place.name] = false;
+            }
+
+            setImages(newImages);
+            setLoading(newLoading);
+        };
+
+        fetchImages();
+    }, [recommendedPlaces]);
+
+    const handleSelectRecommended = async (placeName) => {
+        try {
+            const placeDetails = await GetPlaceDetails(placeName);
+
+            if (placeDetails) {
+                setTripData({
+                    locationInfo: {
+                        name: placeDetails.name,
+                        coordinates: placeDetails.coordinates,
+                        photoRef: null,
+                        url: placeDetails.url,
+                    },
+                });
+
+                router.push("/create-trip/select-traveler");
+            }
+        } catch (error) {
+            console.error("Error selecting recommended place:", error);
+        }
+    };
 
     return (
         <View
             style={{
                 padding: 25,
-                paddingTop: 55,
+                paddingTop: 90,
                 backgroundColor: "#fff",
                 height: "100%",
             }}
         >
-            <GooglePlacesAutocomplete
-                placeholder="Search Place"
-                fetchDetails={true}
-                onPress={(data, details = null) => {
-                    //   'details' is provided when fetchDetails = true
-                    //   console.log(data.description);
-                    //   console.log(details?.geometry.location);
-                    //   console.log(details?.photos[0].photo_reference);
-                    //   console.log(details?.url);
+            <Text style={{ fontSize: 20, fontFamily: "outfit-bold", marginBottom: 15 }}>
+                ✨ Recommended Places
+            </Text>
 
-                    setTripData({
-                        locationInfo: {
-                            name: data.description,
-                            coordinates: details?.geometry.location,
-                            photoRef: details?.photos[0].photo_reference,
-                            url: details?.url,
-                        },
-                    });
-
-                    router.push("/create-trip/select-traveler");
-                }}
-                query={{
-                    key: "process.env.EXPO_PUBLIC_GOOGLE_MAP_KEY",
-                    language: "en",
-                }}
-                styles={{
-                    textInputContainer: {
-                        backgroundColor: "#f5f5f5",
-                        borderWidth: 2,
-                        borderRadius: 10,
-                        marginTop: 25,
-                    },
-                }}
+            <FlatList
+                data={recommendedPlaces}
+                numColumns={2}
+                columnWrapperStyle={{ justifyContent: "space-between" }}
+                keyExtractor={(item) => item.name}
+                renderItem={({ item }) => (
+                    <TouchableOpacity
+                        onPress={() => handleSelectRecommended(item.name)}
+                        style={{
+                            width: "48%",
+                            marginBottom: 15,
+                            backgroundColor: "#f9f9f9",
+                            borderRadius: 12,
+                            overflow: "hidden",
+                        }}
+                    >
+                        <View style={{ height: 120, backgroundColor: "#eee" }}>
+                            {loading[item.name] ? (
+                                <View
+                                    style={{
+                                        flex: 1,
+                                        justifyContent: "center",
+                                        alignItems: "center",
+                                    }}
+                                >
+                                    <ActivityIndicator size="small" color="#FF6B6B" />
+                                </View>
+                            ) : (
+                                <Image
+                                    source={{ uri: images[item.name] || getDeterministicPlaceholder(item.name) }}
+                                    style={{ width: "100%", height: "100%" }}
+                                />
+                            )}
+                        </View>
+                        <View style={{ padding: 10 }}>
+                            <Text style={{ fontFamily: "outfit-medium", fontSize: 14 }}>
+                                {item.name}
+                            </Text>
+                        </View>
+                    </TouchableOpacity>
+                )}
             />
         </View>
     );

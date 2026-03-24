@@ -5,11 +5,13 @@ import moment from "moment";
 import FlightInfo from "../../components/TripDetails/FlightInfo";
 import HotelList from "../../components/TripDetails/HotelList";
 import PlannedTrip from "../../components/TripDetails/PlannedTrip";
+import { getRelevantImage, getPlaceholderImage } from "../../services/ImageService";
 
 export default function TripDetails() {
     const navigation = useNavigation();
     const { trip } = useLocalSearchParams();
     const [tripDetails, setTripDetails] = useState(null);
+    const [headerImage, setHeaderImage] = useState(getPlaceholderImage());
 
     useEffect(() => {
         navigation.setOptions({
@@ -21,9 +23,27 @@ export default function TripDetails() {
         try {
             const parsedTrip = JSON.parse(trip);
             setTripDetails(parsedTrip);
-            console.log(parsedTrip); //1
+
+            // Fetch destination image
+            const fetchHeaderImage = async () => {
+                try {
+                    const tripData = JSON.parse(parsedTrip.tripData);
+                    const location = tripData?.locationInfo?.name;
+                    if (location) {
+                        const url = await getRelevantImage({
+                            name: location,
+                            location,
+                            type: "destination",
+                        });
+                        setHeaderImage(url);
+                    }
+                } catch (err) {
+                    console.error("Error fetching header image:", err);
+                }
+            };
+            fetchHeaderImage();
         } catch (error) {
-            console.error("Failed to parse trip data:", error); //1
+            console.error("Failed to parse trip data:", error);
         }
     }, [trip]);
 
@@ -42,17 +62,11 @@ export default function TripDetails() {
     return (
         <ScrollView>
             <Image
-                source={{
-                    uri:
-                        "https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photo_reference=" +
-                        formatData(tripDetails?.tripData).locationInfo
-                            ?.photoRef +
-                        "&key=" +
-                        process.env.EXPO_PUBLIC_GOOGLE_MAP_KEY,
-                }}
+                source={{ uri: headerImage }}
                 style={{
                     width: "100%",
                     height: 280,
+                    backgroundColor: "#f0f0f0",
                 }}
             />
             <View
@@ -116,10 +130,21 @@ export default function TripDetails() {
                 </Text>
                 {/* Flight Info */}
                 <FlightInfo flightData={tripDetails?.tripPlan?.flightDetails} />
-                {/* HOtels List */}
-                <HotelList hotelList={tripDetails?.tripPlan?.hotelOptions} />
+                {/* Hotels List */}
+                <HotelList
+                    hotelList={tripDetails?.tripPlan?.hotelOptions}
+                    location={tripDetails?.tripPlan?.location}
+                />
                 {/* Trip Day Planner Info */}
-                <PlannedTrip details={tripDetails?.tripPlan?.dailyPlan} />
+                <PlannedTrip
+                    details={
+                        tripDetails?.tripPlan?.itinerary ||
+                        tripDetails?.tripPlan?.dailyPlan ||
+                        tripDetails?.tripPlan?.dayPlan ||
+                        tripDetails?.tripPlan?.Itinerary
+                    }
+                    location={tripDetails?.tripPlan?.location}
+                />
             </View>
             {/* <View>
 

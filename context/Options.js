@@ -51,4 +51,41 @@ export const SelectBudgetOptions = [
 ];
 
 export const AI_PROMPT =
-    "Generate Travel Plan for Location : {location}, for {totalDays} Days and {totalNight} Night for {traveler} with a {budget} budget with a Flight details, Flight Price with Booking url, Hotels options list with HotelName, Hotel address, Price, hotel image url, geo coordinates, rating, descriptions and Places to visit nearby with placeName, Place Details, Place Image Url, Geo Coordinates, ticket Pricing, Time t travel each of the location for {totalDays} days and {totalNight} night with each day plan with best time to visit in JSON format.";
+    `Generate a travel itinerary in this EXACT JSON format for {location} for {totalDays} days, {totalNight} nights for {traveler} travelers with {budget} budget:
+{
+  "location": "{location}",
+  "duration": "{totalDays} Days and {totalNight} Nights",
+  "budget": "{budget}",
+  "flightDetails": {
+    "airline": "real airline name",
+    "price": "actual estimated price in INR",
+    "bookingUrl": "https://www.makemytrip.com"
+  },
+  "hotelOptions": [
+    {
+      "hotelName": "actual real hotel name",
+      "address": "actual address",
+      "pricePerNight": "price in INR",
+      "imageUrl": "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=400",
+      "rating": 4.5,
+      "description": "brief description"
+    }
+  ],
+  "itinerary": [
+    {
+      "day": 1,
+      "theme": "theme name",
+      "places": [
+        {
+          "name": "real place name",
+          "description": "detailed description",
+          "imageUrl": "https://images.unsplash.com/photo-1499856871958-5b9627545d1a?w=400",
+          "coordinates": {"lat": number, "lng": number},
+          "ticketPrice": "price or 'Free'",
+          "timeToVisit": "2 hours"
+        }
+      ]
+    }
+  ]
+}
+IMPORTANT: For imageUrl fields, use Unsplash URLs like "https://images.unsplash.com/photo-[random-id]?w=400" or use generic working URLs. Use REAL place names, REAL prices, REAL hotel names.`;

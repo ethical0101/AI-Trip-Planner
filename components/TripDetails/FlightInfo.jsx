@@ -2,6 +2,10 @@ import { View, Text, TouchableOpacity, Linking } from "react-native";
 import React from "react";
 
 export default function FlightInfo({ flightData }) {
+    if (!flightData) {
+        return null;
+    }
+
     const handleBookingPress = () => {
         if (flightData?.bookingUrl) {
             Linking.openURL(flightData.bookingUrl);
@@ -15,9 +19,10 @@ export default function FlightInfo({ flightData }) {
             style={{
                 marginTop: 20,
                 borderWidth: 1,
-                borderColor: "#f5f5f5",
-                padding: 10,
+                borderColor: "#ddd",
+                padding: 15,
                 borderRadius: 15,
+                backgroundColor: "#f9f9f9",
             }}
         >
             <View
@@ -26,6 +31,7 @@ export default function FlightInfo({ flightData }) {
                     flexDirection: "row",
                     justifyContent: "space-between",
                     alignItems: "center",
+                    marginBottom: 15,
                 }}
             >
                 <Text
@@ -34,48 +40,66 @@ export default function FlightInfo({ flightData }) {
                         fontSize: 20,
                     }}
                 >
-                    ✈️ Flights
+                    ✈️ Flight Details
                 </Text>
                 <TouchableOpacity
                     style={{
-                        backgroundColor: "#000",
-                        padding: 5,
-                        width: 100,
+                        backgroundColor: "#FF6B6B",
+                        padding: 8,
+                        paddingHorizontal: 15,
                         borderRadius: 7,
-                        marginTop: 7,
                     }}
                     onPress={handleBookingPress}
                 >
                     <Text
                         style={{
-                            textAlign: "center",
+                            fontFamily: "outfit-medium",
+                            fontSize: 12,
                             color: "#fff",
-                            fontFamily: "outfit",
                         }}
                     >
-                        Book Here
+                        Book Now
                     </Text>
                 </TouchableOpacity>
             </View>
 
-            <Text
-                style={{
-                    fontFamily: "outfit",
-                    fontSize: 17,
-                    marginTop: 7,
-                }}
-            >
-                Airline: {flightData?.airline}
-            </Text>
-            <Text
-                style={{
-                    fontFamily: "outfit",
-                    fontSize: 17,
-                    marginTop: 7,
-                }}
-            >
-                Price: {flightData?.estimatedPrice} Rs (approx)
-            </Text>
+            <View style={{ marginBottom: 10 }}>
+                <Text
+                    style={{
+                        fontFamily: "outfit",
+                        fontSize: 14,
+                        color: "#666",
+                    }}
+                >
+                    Airline: <Text style={{ fontFamily: "outfit-bold", color: "#000" }}>{flightData?.airline || "Not specified"}</Text>
+                </Text>
+            </View>
+
+            <View style={{ marginBottom: 10 }}>
+                <Text
+                    style={{
+                        fontFamily: "outfit",
+                        fontSize: 14,
+                        color: "#666",
+                    }}
+                >
+                    Price: <Text style={{ fontFamily: "outfit-bold", fontSize: 16, color: "#FF6B6B" }}>₹ {flightData?.price || "Not available"}</Text>
+                </Text>
+            </View>
+
+            {flightData?.bookingUrl && (
+                <View>
+                    <Text
+                        style={{
+                            fontFamily: "outfit",
+                            fontSize: 12,
+                            color: "#999",
+                        }}
+                    >
+                        {flightData.bookingUrl}
+                    </Text>
+                </View>
+            )}
         </View>
     );
 }

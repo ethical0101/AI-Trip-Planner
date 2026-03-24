@@ -4,47 +4,69 @@ import { CreateTripContext } from "../../context/CreateTripContext";
 import { AI_PROMPT } from "../../context/Options";
 import { chatSession } from "../../configs/AiModal";
 import { useRouter } from "expo-router";
-import { doc, setDoc } from "firebase/firestore";
-import { auth, db } from "./../../configs/FirebaseConfig";
+import { initFirebase } from "./../../configs/FirebaseConfig";
 
 export default function GenerateTrip() {
     const { tripData, setTripData } = useContext(CreateTripContext);
     const [loading, setLoading] = useState(false);
-    const user = auth.currentUser;
+    const [user, setUser] = useState(null);
+    const [firebaseReady, setFirebaseReady] = useState(false);
     const router = useRouter();
 
     useEffect(() => {
-        GenerateAiTrip();
+        // Initialize Firebase first
+        const { auth, db } = initFirebase();
+        setUser(auth?.currentUser || null);
+        setFirebaseReady(true);
     }, []);
+
+    useEffect(() => {
+        if (firebaseReady) {
+            GenerateAiTrip();
+        }
+    }, [firebaseReady]);
 
     const GenerateAiTrip = async () => {
         setLoading(true);
 
-        const FINAL_PROMT = AI_PROMPT.replace(
-            "{location}",
-            tripData?.locationInfo?.name
-        )
-            .replace("{totalDays}", tripData?.totalNoOfDays)
-            .replace("{totalNight}", tripData?.totalNoOfDays - 1)
-            .replace("{traveler}", tripData?.traveler?.title)
-            .replace("{budget}", tripData.budget)
-            .replace("{totalDays}", tripData?.totalNoOfDays)
-            .replace("{totalNight}", tripData?.totalNoOfDays - 1);
+        try {
+            const { auth, db } = initFirebase();
 
-        console.log(FINAL_PROMT); //1
-        const result = await chatSession.sendMessage(FINAL_PROMT);
-        console.log(result.response.text()); //1
-        const tripResp = JSON.parse(result.response.text());
-        setLoading(false);
-        const docId = Date.now().toString();
-        const result_ = await setDoc(doc(db, "UserTrips", docId), {
-            userEmail: user.email,
-            tripPlan: tripResp, //AI Result
-            tripData: JSON.stringify(tripData), //User Selection Data
-            docId: docId,
-        });
+            if (!auth?.currentUser) {
+                console.error('User not authenticated');
+                setLoading(false);
+                return;
+            }
 
-        router.push("(tabs)/mytrip");
+            const FINAL_PROMT = AI_PROMPT.replace(
+                "{location}",
+                tripData?.locationInfo?.name
+            )
+                .replace("{totalDays}", tripData?.totalNoOfDays)
+                .replace("{totalNight}", tripData?.totalNoOfDays - 1)
+                .replace("{traveler}", tripData?.traveler?.title)
+                .replace("{budget}", tripData.budget)
+                .replace("{totalDays}", tripData?.totalNoOfDays)
+                .replace("{totalNight}", tripData?.totalNoOfDays - 1);
+
+            console.log(FINAL_PROMT);
+            const result = await chatSession.sendMessage(FINAL_PROMT);
+            console.log(result.response.text());
+            const tripResp = JSON.parse(result.response.text());
+            setLoading(false);
+            const docId = Date.now().toString();
+            await db.collection("UserTrips").doc(docId).set({
+                userEmail: auth.currentUser.email,
+                tripPlan: tripResp,
+                tripData: JSON.stringify(tripData),
+                docId: docId,
+            });
+
+            router.push("(tabs)/mytrip");
+        } catch (error) {
+            console.error('Error generating trip:', error);
+            setLoading(false);
+        }
     };
 
     return (

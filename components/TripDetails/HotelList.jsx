@@ -1,7 +1,7 @@
 import { View, Text, FlatList } from "react-native";
 import HotelCard from "./HotelCard";
 
-export default function HotelList({ hotelList }) {
+export default function HotelList({ hotelList, location }) {
     return (
         <View style={{ marginTop: 20 }}>
             <Text style={{ fontFamily: "outfit-bold", fontSize: 20 }}>
@@ -16,7 +16,7 @@ export default function HotelList({ hotelList }) {
                 horizontal={true}
                 data={hotelList}
                 keyExtractor={(item, index) => index.toString()}
-                renderItem={({ item }) => <HotelCard item={item} />}
+                renderItem={({ item }) => <HotelCard item={item} location={location} />}
             />
         </View>
     );

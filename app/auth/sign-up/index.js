@@ -9,8 +9,7 @@ import {
     View,
 } from "react-native";
 import AntDesign from "@expo/vector-icons/AntDesign";
-import { createUserWithEmailAndPassword } from "firebase/auth";
-import { auth } from "./../../../configs/FirebaseConfig";
+import { initFirebase } from "./../../../configs/FirebaseConfig";
 
 export default function SignUp() {
     const navigation = useNavigation();
@@ -26,27 +25,34 @@ export default function SignUp() {
         });
     }, []);
 
-    const onCreateAccount = () => {
-        if (!email && !password && !fullName) {
-            ToastAndroid.show("Please Enter all detail's!", ToastAndroid.LONG);
+    const onCreateAccount = async () => {
+        if (!email || !password || !fullName) {
+            ToastAndroid.show("Please enter all details!", ToastAndroid.LONG);
             return;
         }
 
-        createUserWithEmailAndPassword(auth, email, password)
-            .then((userCredential) => {
-                // Signed up
-                const user = userCredential.user;
-                router.replace("/mytrip");
-                // console.log(user);//1
-
-                // ...
-            })
-            .catch((error) => {
-                const errorCode = error.code;
-                const errorMessage = error.message;
-                // console.log(errorMessage, errorCode);//1
-                // ..
-            });
+        try {
+            const { auth } = await initFirebase();
+            if (!auth) {
+                ToastAndroid.show("Firebase not configured properly", ToastAndroid.LONG);
+                return;
+            }
+            const result = await auth.createUserWithEmailAndPassword(email, password);
+            console.log('Sign up successful:', result.user.email);
+            router.replace("/(tabs)/mytrip");
+        } catch (error) {
+            console.error('Sign up error:', error);
+            const errorCode = error.code;
+            if (errorCode === "auth/email-already-in-use") {
+                ToastAndroid.show("Email already in use", ToastAndroid.LONG);
+            } else if (errorCode === "auth/weak-password") {
+                ToastAndroid.show("Password is too weak", ToastAndroid.LONG);
+            } else if (errorCode === "auth/invalid-email") {
+                ToastAndroid.show("Invalid email format", ToastAndroid.LONG);
+            } else {
+                ToastAndroid.show(error.message || "Sign-up failed", ToastAndroid.LONG);
+            }
+        }
     };
 
     return (
@@ -59,7 +65,7 @@ export default function SignUp() {
             }}
         >
             <TouchableOpacity onPress={() => router.back()}>
-                <AntDesign name="arrowleft" size={24} color="black" />
+                <AntDesign name="left" size={24} color="black" />
             </TouchableOpacity>
             <Text
                 style={{

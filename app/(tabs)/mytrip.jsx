@@ -9,35 +9,59 @@ import React, { useEffect, useState } from "react";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import StartNewTripCard from "../../components/MyTrips/StartNewTripCard";
 import UserTripList from "../../components/MyTrips/UserTripList";
-import { collection, getDocs, query, where } from "firebase/firestore";
-import { auth, db } from "./../../configs/FirebaseConfig";
+import { initFirebase } from "../../configs/FirebaseConfig";
 import { router } from "expo-router";
 
 export default function MyTrip() {
     const [userTrips, setUserTrips] = useState([]);
-    const user = auth.currentUser;
     const [loading, setLoading] = useState(false);
+    const [user, setUser] = useState(null);
+    const [db, setDb] = useState(null);
 
     useEffect(() => {
-        user && GetMyTrips();
-    }, [user]);
+        let mounted = true;
+        try {
+            const { auth: fbAuth, db: fbDb } = initFirebase();
+            if (!mounted) return;
+            if (fbAuth?.currentUser) {
+                setUser(fbAuth.currentUser);
+                setDb(fbDb);
+            }
+        } catch (e) {
+            console.error("Firebase init error:", e);
+        }
+        return () => {
+            mounted = false;
+        };
+    }, []);
+
+    useEffect(() => {
+        if (user && db) {
+            GetMyTrips();
+        }
+    }, [user, db]);
 
     const GetMyTrips = async () => {
         setLoading(true);
         setUserTrips([]);
-        const q = query(
-            collection(db, "UserTrips"),
-            where("userEmail", "==", user?.email)
-        );
 
-        const querySnapshot = await getDocs(q);
+        try {
+            const querySnapshot = await db
+                .collection("UserTrips")
+                .where("userEmail", "==", user?.email)
+                .get();
 
-        querySnapshot.forEach((doc) => {
-            // doc.data() is never undefined for query doc snapshots
-            console.log(doc.id, "=>", doc.data()); //1
-            setUserTrips((prev) => [...prev, doc.data()]);
-        });
-        setLoading(false);
+            const trips = [];
+            querySnapshot.forEach((doc) => {
+                console.log(doc.id, "=>", doc.data());
+                trips.push(doc.data());
+            });
+            setUserTrips(trips);
+        } catch (err) {
+            console.error("Failed to fetch user trips:", err);
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -72,6 +96,11 @@ export default function MyTrip() {
                 </View>
 
                 {loading && <ActivityIndicator size={"large"} color={"#000"} />}
+                {!db && (
+                    <Text style={{ marginTop: 20, color: "#666" }}>
+                        Firebase is initializing...
+                    </Text>
+                )}
                 {userTrips?.length == 0 ? (
                     <StartNewTripCard />
                 ) : (
